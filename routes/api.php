@@ -6,6 +6,10 @@ use App\Http\Controllers\API\ImageController;
 use App\Http\Controllers\API\LikedCategoryController;
 use App\Http\Controllers\API\MusicController;
 use App\Http\Controllers\API\SearchHistoryController;
+use App\Http\Controllers\API\ListenHistoryController;
+use App\Http\Controllers\API\FollowAuthorController;
+use App\Http\Controllers\API\LikeMusicController;
+use App\Http\Controllers\API\CountController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
@@ -108,4 +112,44 @@ Route::group([
     Route::post('/create', [SearchHistoryController::class, 'store']);
     Route::get('/user', [SearchHistoryController::class, 'show']);
     Route::delete('/{id}', [SearchHistoryController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'listens',
+], function ($router) {
+    Route::get('/', [ListenHistoryController::class, 'index']);
+    Route::post('/create', [ListenHistoryController::class, 'store']);
+    Route::get('/user', [ListenHistoryController::class, 'showByUser']);
+    Route::delete('/{id}', [ListenHistoryController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'follows',
+], function ($router) {
+    Route::get('/', [FollowAuthorController::class, 'index']);
+    Route::post('/create', [FollowAuthorController::class, 'store']);
+    Route::get('/user', [FollowAuthorController::class, 'showByUser']);
+    Route::delete('/{id}', [FollowAuthorController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'like-musics',
+], function ($router) {
+    Route::get('/', [LikeMusicController::class, 'index']);
+    Route::post('/create', [LikeMusicController::class, 'store']);
+    Route::get('/user', [LikeMusicController::class, 'showByUser']);
+    Route::delete('/{id}', [LikeMusicController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'counts',
+], function ($router) {
+    Route::get('/', [CountController::class, 'index']);
+    Route::post('/create', [CountController::class, 'store']);
+    Route::get('/user', [CountController::class, 'showByUser']);
+    Route::delete('/{id}', [CountController::class, 'destroy']);
 });

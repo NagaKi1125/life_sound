@@ -10,6 +10,10 @@ use App\Http\Controllers\API\ListenHistoryController;
 use App\Http\Controllers\API\FollowAuthorController;
 use App\Http\Controllers\API\LikeMusicController;
 use App\Http\Controllers\API\CountController;
+use App\Http\Controllers\API\LyricController;
+use App\Http\Controllers\API\AlbumController;
+use App\Http\Controllers\API\AlbumMusicController;
+use App\Http\Controllers\API\LikeAlbumController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
@@ -152,4 +156,48 @@ Route::group([
     Route::post('/create', [CountController::class, 'store']);
     Route::get('/user', [CountController::class, 'showByUser']);
     Route::delete('/{id}', [CountController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'lyrics',
+], function ($router) {
+    Route::get('/', [LyricController::class, 'index']);
+    Route::post('/create', [LyricController::class, 'store']);
+    Route::get('/{id}', [LyricController::class, 'show']);
+    Route::put('/{id}', [LyricController::class, 'update']);
+    Route::delete('/{id}', [LyricController::class, 'destroy']);
+});
+
+
+//  format
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'albums',
+], function ($router) {
+    Route::get('/', [AlbumController::class, 'index']);
+    Route::post('/create', [AlbumController::class, 'store']);
+    Route::get('/{id}', [AlbumController::class, 'show']);
+    Route::put('/{id}', [AlbumController::class, 'update']);
+    Route::delete('/{id}', [AlbumController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'album-musics',
+], function ($router) {
+    Route::get('/', [AlbumMusicController::class, 'index']);
+    Route::post('/create', [AlbumMusicController::class, 'store']);
+    Route::get('/user', [AlbumMusicController::class, 'showByUser']);
+    Route::delete('/{id}', [AlbumMusicController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'like-albums',
+], function ($router) {
+    Route::get('/', [LikeAlbumController::class, 'index']);
+    Route::post('/create', [LikeAlbumController::class, 'store']);
+    Route::get('/user', [LikeAlbumController::class, 'showByUser']);
+    Route::delete('/{id}', [LikeAlbumController::class, 'destroy']);
 });

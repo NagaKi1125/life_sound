@@ -45,36 +45,10 @@ class AlbumMusicController extends Controller
      * @param  \App\Models\AlbumMusic  $albumMusic
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function showByUser()
     {
-        $albumMusic = AlbumMusic::find($id);
-        if ($albumMusic) {
-            return response()->json($albumMusic);
-        } else {
-            return $this->jsonResponse(400, 'Could not find albumMusic', new AlbumMusic());
-        }
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\AlbumMusic  $albumMusic
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        $albumMusic = AlbumMusic::find($id);
-        if ($albumMusic) {
-            $albumMusic->musicId = $request->musicId;
-            if ($albumMusic->update()) {
-                return response()->json($albumMusic);
-            } else {
-                $this->jsonResponse(400, 'Cannot modify albumMusic', new AlbumMusic());
-            }
-        } else {
-            return $this->jsonResponse(400, 'Could not find albumMusic', new AlbumMusic());
-        }
+        $albumMusic = AlbumMusic::where('userId', '=', Auth::user()->_id)->get();
+        return response()->json($albumMusic);
     }
 
     /**

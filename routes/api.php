@@ -188,7 +188,6 @@ Route::group([
 ], function ($router) {
     Route::get('/', [AlbumMusicController::class, 'index']);
     Route::post('/create', [AlbumMusicController::class, 'store']);
-    Route::get('/user', [AlbumMusicController::class, 'showByUser']);
     Route::delete('/{id}', [AlbumMusicController::class, 'destroy']);
 });
 

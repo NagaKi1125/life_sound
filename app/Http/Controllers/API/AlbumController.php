@@ -67,7 +67,6 @@ class AlbumController extends Controller
         $album = Album::find($id);
         if ($album) {
             $album->userId = Auth::user()->_id;
-            $album->musicId = $request->musicId;
             $album->name = $request->name;
             if ($album->update()) {
                 return response()->json($album);

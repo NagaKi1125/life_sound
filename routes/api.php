@@ -6,6 +6,14 @@ use App\Http\Controllers\API\ImageController;
 use App\Http\Controllers\API\LikedCategoryController;
 use App\Http\Controllers\API\MusicController;
 use App\Http\Controllers\API\SearchHistoryController;
+use App\Http\Controllers\API\ListenHistoryController;
+use App\Http\Controllers\API\FollowAuthorController;
+use App\Http\Controllers\API\LikeMusicController;
+use App\Http\Controllers\API\CountController;
+use App\Http\Controllers\API\LyricController;
+use App\Http\Controllers\API\AlbumController;
+use App\Http\Controllers\API\AlbumMusicController;
+use App\Http\Controllers\API\LikeAlbumController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
@@ -108,4 +116,87 @@ Route::group([
     Route::post('/create', [SearchHistoryController::class, 'store']);
     Route::get('/user', [SearchHistoryController::class, 'show']);
     Route::delete('/{id}', [SearchHistoryController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'listens',
+], function ($router) {
+    Route::get('/', [ListenHistoryController::class, 'index']);
+    Route::post('/create', [ListenHistoryController::class, 'store']);
+    Route::get('/user', [ListenHistoryController::class, 'showByUser']);
+    Route::delete('/{id}', [ListenHistoryController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'follows',
+], function ($router) {
+    Route::get('/', [FollowAuthorController::class, 'index']);
+    Route::post('/create', [FollowAuthorController::class, 'store']);
+    Route::get('/user', [FollowAuthorController::class, 'showByUser']);
+    Route::delete('/{id}', [FollowAuthorController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'like-musics',
+], function ($router) {
+    Route::get('/', [LikeMusicController::class, 'index']);
+    Route::post('/create', [LikeMusicController::class, 'store']);
+    Route::get('/user', [LikeMusicController::class, 'showByUser']);
+    Route::delete('/{id}', [LikeMusicController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'counts',
+], function ($router) {
+    Route::get('/', [CountController::class, 'index']);
+    Route::post('/create', [CountController::class, 'store']);
+    Route::get('/user', [CountController::class, 'showByUser']);
+    Route::delete('/{id}', [CountController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'lyrics',
+], function ($router) {
+    Route::get('/', [LyricController::class, 'index']);
+    Route::post('/create', [LyricController::class, 'store']);
+    Route::get('/{id}', [LyricController::class, 'show']);
+    Route::put('/{id}', [LyricController::class, 'update']);
+    Route::delete('/{id}', [LyricController::class, 'destroy']);
+});
+
+
+//  format
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'albums',
+], function ($router) {
+    Route::get('/', [AlbumController::class, 'index']);
+    Route::post('/create', [AlbumController::class, 'store']);
+    Route::get('/{id}', [AlbumController::class, 'show']);
+    Route::put('/{id}', [AlbumController::class, 'update']);
+    Route::delete('/{id}', [AlbumController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'album-musics',
+], function ($router) {
+    Route::get('/', [AlbumMusicController::class, 'index']);
+    Route::post('/create', [AlbumMusicController::class, 'store']);
+    Route::delete('/{id}', [AlbumMusicController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'like-albums',
+], function ($router) {
+    Route::get('/', [LikeAlbumController::class, 'index']);
+    Route::post('/create', [LikeAlbumController::class, 'store']);
+    Route::get('/user', [LikeAlbumController::class, 'showByUser']);
+    Route::delete('/{id}', [LikeAlbumController::class, 'destroy']);
 });

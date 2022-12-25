@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\ListenHistory;
 use App\Models\Music;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Image;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
 
 
 class MusicController extends Controller
@@ -97,8 +99,14 @@ class MusicController extends Controller
     public function show($id)
     {
         $music = Music::find($id);
+
         if ($music) {
-            return response()->json($music);
+            $listenHistory = new ListenHistory();
+            $listenHistory->musicId = $music->id;
+            $listenHistory->userId = Auth::user()->id;
+            $listenHistory->save();
+
+            return $music;
         } else {
             return $this->jsonResponse(400, "Cannot find music", new Music());
         }
@@ -187,6 +195,28 @@ class MusicController extends Controller
                 new Music()
             );
         }
+    }
+
+    public function musicObject($name, $year)
+    {
+        $music = ["name"=>$name, "year" => $year];
+        return $music;
+    }
+    public function getRecommendation()
+    {
+
+        $musicList = [
+            $this->musicObject('Come As You Are', 1991),
+            $this->musicObject('Smells Like Teen Spirit', 1991),
+            $this->musicObject('Heads Carolina, Tails California', 1996),
+            $this->musicObject("Breakfast At Tiffany's", 1995),
+            $this->musicObject('Lithium', 1992)
+        ];
+
+        $recommendation = Http::withBody(json_encode($musicList),'application/json')->get('http://127.0.0.1:5000/recommend')->json();
+
+     
+        return $recommendation;
     }
 
     public function jsonResponse(int $code, string $message, object $data)

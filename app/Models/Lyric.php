@@ -8,5 +8,5 @@ use Jenssegers\Mongodb\Eloquent\Model;
 class Lyric extends Model
 {
     use HasFactory;
-    protected $fillable = ['musicId', 'lyric'];
+    protected $fillable = ['musicId', 'name', 'lyric'];
 }

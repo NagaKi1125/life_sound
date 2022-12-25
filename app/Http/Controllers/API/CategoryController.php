@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Response;
 
 
@@ -27,7 +29,7 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $category = Category::select('_id AS id','category')->get();
+        $category = Category::select('_id AS id', 'category')->get();
         return response()->json(
             $category
         );

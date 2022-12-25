@@ -17,8 +17,12 @@ return new class extends Migration
             $table->id();
             $table->string('url');
             $table->string('name');
+            $table->string('spotify_id');
             $table->string('category');
-            $table->string('author');
+            $table->string('duration');
+            $table->string('preview_url');
+            $table->string('year');
+            $table->string('authors');
             $table->string('thumbnail');
             $table->timestamps();
         });

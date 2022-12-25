@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CategoryController;
+use App\Http\Controllers\API\DataController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +56,8 @@ Route::group([
     Route::get('/{id}', [CategoryController::class, 'show']);
     Route::put('/{id}', [CategoryController::class, 'update']);
     Route::delete('/{id}', [CategoryController::class, 'destroy']);
+    // get spotify genre
+    Route::get('/spotify/genres', [CategoryController::class, 'fetchSpotifyGenre']);
 });
 
 Route::group([
@@ -81,6 +84,7 @@ Route::group([
     'prefix' => 'musics',
 ], function ($router) {
     Route::get('/', [MusicController::class, 'index']);
+    Route::get('/recommendation/get', [MusicController::class, 'getRecommendation']);
     Route::post('/create', [MusicController::class, 'store']);
     Route::get('/{id}', [MusicController::class, 'show']);
     Route::put('/{id}', [MusicController::class, 'update']);
@@ -199,4 +203,14 @@ Route::group([
     Route::post('/create', [LikeAlbumController::class, 'store']);
     Route::get('/user', [LikeAlbumController::class, 'showByUser']);
     Route::delete('/{id}', [LikeAlbumController::class, 'destroy']);
+});
+
+Route::group([
+    'prefix' => 'data'
+], function ($router) {
+    Route::post('/auto-genres', [DataController::class, 'fetchGenres']);
+    Route::post('/auto-artists', [DataController::class, 'fetchArtists']);
+    Route::post('/auto-tracks', [DataController::class, 'fetchTracks']);
+    Route::get('/update-tracks', [DataController::class, 'updateTrackGenres']);
+    Route::post('/auto-lyrics', [DataController::class, 'fetchLyrics']);
 });

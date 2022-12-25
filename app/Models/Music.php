@@ -8,5 +8,5 @@ use Jenssegers\Mongodb\Eloquent\Model;
 class Music extends Model
 {
     use HasFactory;
-    protected $fillable = ['url', 'name', 'category', 'author', 'thumbnail'];
+    protected $fillable = ['url', 'name', 'category', 'authors', 'thumbnail', 'preview_url', 'spotify_id', 'duration', 'year'];
 }

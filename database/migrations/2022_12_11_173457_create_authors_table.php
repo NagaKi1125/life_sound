@@ -16,8 +16,9 @@ return new class extends Migration
         Schema::create('authors', function (Blueprint $table) {
             // $table->id();
             $table->string('name');
-            $table->string('avatar');
-            $table->string('description');
+            $table->string('thumbnail');
+            $table->int('popularity');
+            $table->string('spotify_id');
             $table->timestamps();
         });
     }

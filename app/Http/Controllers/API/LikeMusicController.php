@@ -40,7 +40,7 @@ class LikeMusicController extends Controller
         $likeMusic->userId = Auth::user()->_id;
         $likeMusic->musicId = $request->musicId;
         if ($likeMusic->save()) {
-            return response()->json($likeMusic);
+            return $likeMusic;
         } else {
             return $this->jsonResponse(400, 'Could not store', new LikeMusic());
         }

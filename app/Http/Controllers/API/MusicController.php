@@ -6,6 +6,8 @@ use App\Models\ListenHistory;
 use App\Models\Music;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Author;
+use App\Models\Count;
 use App\Models\Image;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -26,7 +28,8 @@ class MusicController extends Controller
      */
     public function index()
     {
-        $musics = Music::all();
+        $musics = Music::all()->take(20);
+
         return response()->json(
             $musics
         );
@@ -43,7 +46,6 @@ class MusicController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
-
         ]);
 
         if ($validator->fails()) {
@@ -106,8 +108,12 @@ class MusicController extends Controller
             $listenHistory->userId = Auth::user()->id;
             $listenHistory->save();
 
+            $listenCount = new Count();
+            $listenCount->userId = Auth::user()->id;
+            $listenCount->musicId = $music->id;
             return $music;
         } else {
+
             return $this->jsonResponse(400, "Cannot find music", new Music());
         }
     }
@@ -199,7 +205,7 @@ class MusicController extends Controller
 
     public function musicObject($name, $year)
     {
-        $music = ["name"=>$name, "year" => $year];
+        $music = ["name" => $name, "year" => $year];
         return $music;
     }
     public function getRecommendation()
@@ -213,9 +219,50 @@ class MusicController extends Controller
             $this->musicObject('Lithium', 1992)
         ];
 
-        $recommendation = Http::withBody(json_encode($musicList),'application/json')->get('http://127.0.0.1:5000/recommend')->json();
+        $recommendation = Http::withBody(json_encode($musicList), 'application/json')->get('http://127.0.0.1:5000/recommend')->json();
 
-     
+
+        foreach ($recommendation as $result) {
+            $artists = $result['artists'];
+            $artist_list = '';
+            // ---check and save author if not exits
+            foreach ($artists as $artist) {
+                $author = Author::where('spotify_id', $artist['spotify_id'])->first();
+                if ($author) {
+                    $artist_list = $artist_list . '_' . $author->id;
+                } else {
+                    $a = new Author();
+                    $a->spotify_id = $artist['spotify_id'];
+                    $a->name = $artist['name'];
+                    $a->thumbnail = $artist['thumbnail'];
+                    $a->popularity = $artist['popularity'];
+                    if ($a->save()) {
+                        $artist_list = $artist_list . '_' . $a->id;
+                    }
+                }
+            }
+
+            // check and save music if not exits
+            $music = Music::where('spotify_id', $result['spotify_id'])->first();
+            if ($music) {
+
+            } else {
+                $m = new Music();
+                $m->authors = $artist_list;
+                $m->preview_url = $result['preview_url'];
+                $m->duration = $result['duration'];
+                $m->name = $result['name'];
+                $m->spotify_id = $result['spotify_id'];
+                $m->year = $result['year'];
+                $m->url = '';
+                $m->category = '';
+                $m->thumbnail = '';
+
+                $m->save();
+            }
+
+        }
+
         return $recommendation;
     }
 

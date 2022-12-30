@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Album;
+use App\Models\FollowAuthor;
 use App\Models\Image;
+use App\Models\LikeMusic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -112,8 +116,23 @@ class AuthController extends Controller
     {
         $user = Auth::user();
         $avatar = Image::select('url')->find($user->avatar);
+        $likeMusic = DB::table('like_music')->where('userId', $user->id)->count();
+        //     ->join('music', 'like_music.musicId', '=', 'music.id')
+        //     ->select('music.*')->get();
+        $authors = FollowAuthor::where('userId', $user->id)->count();
+        $albums = Album::where('userId', $user->id)->count();
+
+
         return response()->json([
             'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => $avatar ?? 'null',
+            'favorite_track' => $likeMusic,
+            'followed_author' => $authors,
+            'albums' => $albums,
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
 
         ]);
     }

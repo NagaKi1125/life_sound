@@ -9,10 +9,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Author;
 use App\Models\Count;
 use App\Models\Image;
+use App\Models\Lyric;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
 
+use function PHPUnit\Framework\isEmpty;
 
 class MusicController extends Controller
 {
@@ -111,6 +113,22 @@ class MusicController extends Controller
             $listenCount = new Count();
             $listenCount->userId = Auth::user()->id;
             $listenCount->musicId = $music->id;
+
+            $authorList = array();
+            foreach (explode('_', $music->authors) as $au) {
+                if ($au) {
+                    $author = Author::find($au)->first();
+                    if ($author) {
+                        array_push($authorList, $author);
+                    }
+                }
+            }
+            $music->authors = $authorList;
+
+            // get lyrics info
+            $lyrics = Lyric::where('musicId', $music->id)->first();
+            $music->lyric = $lyrics;
+
             return $music;
         } else {
 
@@ -211,59 +229,117 @@ class MusicController extends Controller
     public function getRecommendation()
     {
 
-        $musicList = [
-            $this->musicObject('Come As You Are', 1991),
-            $this->musicObject('Smells Like Teen Spirit', 1991),
-            $this->musicObject('Heads Carolina, Tails California', 1996),
-            $this->musicObject("Breakfast At Tiffany's", 1995),
-            $this->musicObject('Lithium', 1992)
-        ];
+        // TODO add the recent listen music of user to replace seed_list
+        $seed_list = array();
+        $userMusicListenHistory = ListenHistory::where('userId', Auth::user()->id)->get();
+        if ($userMusicListenHistory) {
+            foreach ($userMusicListenHistory as $umlh) {
+                $music = Music::find($umlh->musicId)->first();
+                if ($music) {
+                    array_push($seed_list, $this->musicObject($music->name, $music->year));
+                }
+            }
+        } else {
+            // ready the seed list id user is not hear any music yet
+            $seed_list = [
+                $this->musicObject('Come As You Are', 1991),
+                // $this->musicObject('Smells Like Teen Spirit', 1991),
+                // $this->musicObject('Heads Carolina, Tails California', 1996),
+                $this->musicObject("Breakfast At Tiffany's", 1995),
+                $this->musicObject('Lithium', 1992)
+            ];
+        }
 
-        $recommendation = Http::withBody(json_encode($musicList), 'application/json')->get('http://127.0.0.1:5000/recommend')->json();
 
 
-        foreach ($recommendation as $result) {
-            $artists = $result['artists'];
-            $artist_list = '';
-            // ---check and save author if not exits
-            foreach ($artists as $artist) {
-                $author = Author::where('spotify_id', $artist['spotify_id'])->first();
-                if ($author) {
-                    $artist_list = $artist_list . '_' . $author->id;
-                } else {
-                    $a = new Author();
-                    $a->spotify_id = $artist['spotify_id'];
-                    $a->name = $artist['name'];
-                    $a->thumbnail = $artist['thumbnail'];
-                    $a->popularity = $artist['popularity'];
-                    if ($a->save()) {
-                        $artist_list = $artist_list . '_' . $a->id;
+        // Make the api call to get recommendation music list
+        $recommendation = Http::withBody(json_encode($seed_list), 'application/json')->get('http://127.0.0.1:5000/recommend')->json();
+
+        // TODO remove when enough information
+        // Check if the musics is already saved in database
+        $notSavedList = array();
+        $savedList = array();
+        foreach ($recommendation as $track) {
+            $music = Music::where('spotify_id', $track['id'])->first();
+            if ($music) {
+                array_push($savedList, $music);
+            } else {
+                array_push($notSavedList, ["id" => $track['id'], "year" => $track["year"]], );
+            }
+        }
+
+        // check id the notSavedList is empty - if empty skip this step - if not call the api to get music data and save to DB (to - make data more variety)
+        if ($notSavedList) {
+            // call api to get track info and then save
+            $track_info = Http::withBody(json_encode($notSavedList), 'application/json')->get('http://127.0.0.1:5000/auto-gen/getTrack')->json();
+            foreach ($track_info as $result) {
+                $artists = $result['artists'];
+                $artist_list = '';
+                // ---check and save author if not exits
+                foreach ($artists as $artist) {
+                    $author = Author::where('spotify_id', $artist['spotify_id'])->first();
+                    if ($author) {
+                        $artist_list = $artist_list . '_' . $author->id;
+                    } else {
+                        $a = new Author();
+                        $a->spotify_id = $artist['spotify_id'];
+                        $a->name = $artist['name'];
+                        $a->thumbnail = $artist['thumbnail'];
+                        $a->popularity = $artist['popularity'];
+                        if ($a->save()) {
+                            $artist_list = $artist_list . '_' . $a->id;
+                        }
                     }
+                }
+
+                // check and save music if not exits, also add the found or newest create to $musiclist
+                $music = Music::where('spotify_id', $result['spotify_id'])->first();
+                if ($music) {
+                    array_push($savedList, $music);
+                } else {
+                    $m = new Music();
+                    $m->authors = $artist_list;
+                    $m->preview_url = $result['preview_url'];
+                    $m->duration = $result['duration'];
+                    $m->name = $result['name'];
+                    $m->spotify_id = $result['spotify_id'];
+                    $m->year = $result['year'];
+                    $m->url = '';
+                    $m->category = '';
+                    $m->thumbnail = '';
+
+                    if ($m->save()) {
+                        array_push($savedList, $m);
+                    }
+                }
+
+            }
+        }
+
+        // get Information of authors, lyrics,...            
+        $music_data = array();
+        foreach ($savedList as $m) {
+            // get artist info
+            $artistList = [];
+
+            foreach (explode('_', $m->authors) as $author) {
+                if ($author) {
+                    $au = Author::find($author)->first();
+                    if ($au)
+                        array_push($artistList, $au);
                 }
             }
 
-            // check and save music if not exits
-            $music = Music::where('spotify_id', $result['spotify_id'])->first();
-            if ($music) {
+            $m->authors = $artistList;
 
-            } else {
-                $m = new Music();
-                $m->authors = $artist_list;
-                $m->preview_url = $result['preview_url'];
-                $m->duration = $result['duration'];
-                $m->name = $result['name'];
-                $m->spotify_id = $result['spotify_id'];
-                $m->year = $result['year'];
-                $m->url = '';
-                $m->category = '';
-                $m->thumbnail = '';
+            array_push($music_data, $m);
 
-                $m->save();
-            }
-
+            // get lyrics info
+            $lyrics = Lyric::where('musicId', $m->id)->first();
+            $m->lyric = $lyrics;
         }
 
-        return $recommendation;
+        return $music_data;
     }
 
     public function jsonResponse(int $code, string $message, object $data)

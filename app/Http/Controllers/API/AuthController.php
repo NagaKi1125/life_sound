@@ -116,25 +116,8 @@ class AuthController extends Controller
     {
         $user = Auth::user();
         $avatar = Image::select('url')->find($user->avatar);
-        $likeMusic = DB::table('like_music')->where('userId', $user->id)->count();
-        //     ->join('music', 'like_music.musicId', '=', 'music.id')
-        //     ->select('music.*')->get();
-        $authors = FollowAuthor::where('userId', $user->id)->count();
-        $albums = Album::where('userId', $user->id)->count();
-
-
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'avatar' => $avatar ?? 'null',
-            'favorite_track' => $likeMusic,
-            'followed_author' => $authors,
-            'albums' => $albums,
-            'created_at' => $user->created_at,
-            'updated_at' => $user->updated_at,
-
-        ]);
+        $user->avatar = $avatar;
+        return $user;
     }
 
     public function updateUserProfile(Request $request)
@@ -193,11 +176,14 @@ class AuthController extends Controller
      */
     protected function createNewToken($token)
     {
+        $user = Auth::user();
+        $avatar = Image::select('url')->find($user->avatar);
+        $user->avatar = $avatar;
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'user' => Auth::user(),
+            'user' => $user,
         ]);
     }
 

@@ -7,9 +7,12 @@ use App\Models\Music;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Author;
+use App\Models\Comment;
 use App\Models\Count;
 use App\Models\Image;
+use App\Models\LikeMusic;
 use App\Models\Lyric;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
@@ -32,9 +35,33 @@ class MusicController extends Controller
     {
         $musics = Music::all()->take(20);
 
-        return response()->json(
-            $musics
-        );
+        foreach ($musics as $music) {
+            $authorList = array();
+            foreach (explode('_', $music->authors) as $au) {
+                if ($au) {
+                    $author = Author::find($au)->first();
+                    if ($author) {
+                        array_push($authorList, $author);
+                    }
+                }
+            }
+            $music->authors = $authorList;
+
+            // get lyrics info
+            $lyrics = Lyric::where('musicId', $music->id)->first();
+            $music->lyric = $lyrics;
+
+            // get LikedCount
+            $likeCount = LikeMusic::where('musicId', $music->id)->get()->count();
+            $music->likeCount = $likeCount;
+
+            // get ListenCount
+            $listenCount = Count::where('musicId', $music->id)->get()->count();
+            $music->listenCount = $listenCount;
+        }
+
+        return response()->json($musics);
+
     }
 
     /**
@@ -113,6 +140,7 @@ class MusicController extends Controller
             $listenCount = new Count();
             $listenCount->userId = Auth::user()->id;
             $listenCount->musicId = $music->id;
+            $listenCount->save();
 
             $authorList = array();
             foreach (explode('_', $music->authors) as $au) {
@@ -128,6 +156,23 @@ class MusicController extends Controller
             // get lyrics info
             $lyrics = Lyric::where('musicId', $music->id)->first();
             $music->lyric = $lyrics;
+
+            // get LikedCount
+            $likeCount = LikeMusic::where('musicId', $music->id)->get()->count();
+            $music->likeCount = $likeCount;
+
+            // get ListenCount
+            $listenCount = Count::where('musicId', $music->id)->get()->count();
+            $music->listenCount = $listenCount;
+
+            //getComments
+            $comments = Comment::where('musicId', $music->id)->get();
+            foreach ($comments as $cmt) {
+                $user = User::find($cmt->userId)->first();
+                $cmt->user = $user;
+            }
+
+            $music->comments = $comments;
 
             return $music;
         } else {
@@ -243,8 +288,8 @@ class MusicController extends Controller
             // ready the seed list id user is not hear any music yet
             $seed_list = [
                 $this->musicObject('Come As You Are', 1991),
-                // $this->musicObject('Smells Like Teen Spirit', 1991),
-                // $this->musicObject('Heads Carolina, Tails California', 1996),
+                $this->musicObject('Smells Like Teen Spirit', 1991),
+                $this->musicObject('Heads Carolina, Tails California', 1996),
                 $this->musicObject("Breakfast At Tiffany's", 1995),
                 $this->musicObject('Lithium', 1992)
             ];
@@ -337,6 +382,16 @@ class MusicController extends Controller
             // get lyrics info
             $lyrics = Lyric::where('musicId', $m->id)->first();
             $m->lyric = $lyrics;
+
+            // get LikedCount
+            $likeCount = LikeMusic::where('musicId', $m->id)->get()->count();
+            $m->likeCount = $likeCount;
+
+            // get ListenCount
+            $listenCount = Count::where('musicId', $m->id)->get()->count();
+            $m->listenCount = $listenCount;
+
+
         }
 
         return $music_data;

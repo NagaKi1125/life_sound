@@ -5,6 +5,11 @@ namespace App\Http\Controllers\API;
 use App\Models\Album;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\AlbumMusic;
+use App\Models\Author;
+use App\Models\Count;
+use App\Models\LikeMusic;
+use App\Models\Lyric;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -21,7 +26,37 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        $albums = Album::all();
+        $albums = Album::where('userId', Auth::user()->id)->get();
+        foreach($albums as $album){
+
+            $musics = AlbumMusic::where('albumId',$album->id)->get();
+            foreach ($musics as $music) {
+                $authorList = array();
+                foreach (explode('_', $music->authors) as $au) {
+                    if ($au) {
+                        $author = Author::find($au)->first();
+                        if ($author) {
+                            array_push($authorList, $author);
+                        }
+                    }
+                }
+                $music->authors = $authorList;
+    
+                // get lyrics info
+                $lyrics = Lyric::where('musicId', $music->id)->first();
+                $music->lyric = $lyrics;
+    
+                // get LikedCount
+                $likeCount = LikeMusic::where('musicId', $music->id)->get()->count();
+                $music->likeCount = $likeCount;
+    
+                // get ListenCount
+                $listenCount = Count::where('musicId', $music->id)->get()->count();
+                $music->listenCount = $listenCount;
+            }
+            $album->musics = $music;
+
+        }
         return response()->json($albums);
     }
 

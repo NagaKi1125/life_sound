@@ -23,7 +23,7 @@ class ListenHistoryController extends Controller
      */
     public function index()
     {
-        $listenHistories = ListenHistory::all();
+        $listenHistories = ListenHistory::where('userId', Auth::user()->id)->get();
         return response()->json($listenHistories);
     }
 

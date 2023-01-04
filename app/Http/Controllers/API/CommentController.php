@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -23,7 +24,19 @@ class CommentController extends Controller
     public function index()
     {
         $comments = Comment::all();
-        return response()->json($comments);
+        return $comments;
+    }
+
+    public function getMusicComments($id)
+    {
+        $comments = Comment::where('musicId', $id)->get();
+        foreach ($comments as $cmt) {
+            $user = User::find($cmt->userId)->first();
+            if ($user) {
+                $cmt->user = $user;
+            }
+        }
+        return $comments;
     }
 
 

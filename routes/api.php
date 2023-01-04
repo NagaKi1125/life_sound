@@ -96,6 +96,7 @@ Route::group([
     'prefix' => 'comments',
 ], function ($router) {
     Route::get('/', [CommentController::class, 'index']);
+    Route::get('/music-comments/{id}', [CommentController::class, 'getMusicComments']);
     Route::post('/create', [CommentController::class, 'store']);
     Route::get('/{id}', [CommentController::class, 'show']);
     Route::put('/{id}', [CommentController::class, 'update']);
@@ -147,7 +148,7 @@ Route::group([
     'prefix' => 'like-musics',
 ], function ($router) {
     Route::get('/', [LikeMusicController::class, 'index']);
-    Route::post('/create', [LikeMusicController::class, 'store']);
+    Route::post('/create/{musicId}', [LikeMusicController::class, 'store']);
     Route::get('/user', [LikeMusicController::class, 'showByUser']);
     Route::delete('/{id}', [LikeMusicController::class, 'destroy']);
 });

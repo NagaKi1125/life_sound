@@ -23,7 +23,7 @@ class LikeMusicController extends Controller
      */
     public function index()
     {
-        $likeMusics = LikeMusic::all();
+        $likeMusics = LikeMusic::select('musicId')->where('userId', Auth::user()->id)->get();
         return response()->json($likeMusics);
     }
 
@@ -34,16 +34,21 @@ class LikeMusicController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store($musicId)
     {
-        $likeMusic = new LikeMusic();
-        $likeMusic->userId = Auth::user()->_id;
-        $likeMusic->musicId = $request->musicId;
-        if ($likeMusic->save()) {
-            return $likeMusic;
+        $likeMusic = LikeMusic::where('musicId', $musicId)->first();
+        if ($likeMusic) {
         } else {
-            return $this->jsonResponse(400, 'Could not store', new LikeMusic());
+            $lm = new LikeMusic();
+            $lm->userId = Auth::user()->_id;
+            $lm->musicId = $musicId;
+            if ($lm->save()) {
+                return $lm;
+            } else {
+                return $this->jsonResponse(400, 'Could not store', new LikeMusic());
+            }
         }
+
 
     }
 

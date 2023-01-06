@@ -298,7 +298,7 @@ class MusicController extends Controller
 
 
         // Make the api call to get recommendation music list
-        $recommendation = Http::withBody(json_encode($seed_list), 'application/json')->get('http://127.0.0.1:5000/recommend')->json();
+        $recommendation = Http::withBody(json_encode($seed_list), 'application/json')->get('http://musicrecommend.pythonanywhere.com/recommend')->json();
 
         // TODO remove when enough information
         // Check if the musics is already saved in database
@@ -316,7 +316,7 @@ class MusicController extends Controller
         // check id the notSavedList is empty - if empty skip this step - if not call the api to get music data and save to DB (to - make data more variety)
         if ($notSavedList) {
             // call api to get track info and then save
-            $track_info = Http::withBody(json_encode($notSavedList), 'application/json')->get('http://127.0.0.1:5000/auto-gen/getTrack')->json();
+            $track_info = Http::withBody(json_encode($notSavedList), 'application/json')->get('http://musicrecommend.pythonanywhere.com/auto-gen/getTrack')->json();
             foreach ($track_info as $result) {
                 $artists = $result['artists'];
                 $artist_list = '';

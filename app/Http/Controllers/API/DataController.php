@@ -37,7 +37,7 @@ class DataController extends Controller
 
     public function fetchArtists(Request $req)
     {
-        $url = 'http://127.0.0.1:5000/auto-gen/artists';
+        $url = 'http://musicrecommend.pythonanywhere.com/auto-gen/artists';
         $result = Http::timeout(500)->get($url)->json();
 
         foreach ($result as $r) {
@@ -58,7 +58,7 @@ class DataController extends Controller
 
     public function fetchTracks(Request $req)
     {
-        $url = 'http://127.0.0.1:5000/auto-gen/fetch-track';
+        $url = 'http://musicrecommend.pythonanywhere.com/auto-gen/fetch-track';
         $results = Http::timeout(500)->get($url)->json();
 
         foreach ($results as $result) {

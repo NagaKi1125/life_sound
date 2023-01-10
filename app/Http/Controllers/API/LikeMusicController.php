@@ -5,7 +5,14 @@ namespace App\Http\Controllers\API;
 use App\Models\LikeMusic;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Author;
+use App\Models\Comment;
+use App\Models\Count;
 use App\Models\Image;
+use App\Models\ListenHistory;
+use App\Models\Lyric;
+use App\Models\Music;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -24,7 +31,37 @@ class LikeMusicController extends Controller
     public function index()
     {
         $likeMusics = LikeMusic::select('musicId')->where('userId', Auth::user()->id)->get();
-        return response()->json($likeMusics);
+        $likes = [];
+        foreach ($likeMusics as $lk) {
+            $music = Music::find($lk->musicId);
+
+            if ($music) {
+
+                $authorList = array();
+                foreach (explode('_', $music->authors) as $au) {
+                    if ($au) {
+                        $author = Author::find($au)->first();
+                        if ($author) {
+                            array_push($authorList, $author);
+                        }
+                    }
+                }
+                $music->authors = $authorList;
+
+                // get LikedCount
+                $likeCount = LikeMusic::where('musicId', $music->id)->get()->count();
+                $music->likeCount = $likeCount;
+
+                // get ListenCount
+                $listenCount = Count::where('musicId', $music->id)->get()->count();
+                $music->listenCount = $listenCount;
+
+                array_push($likes, $music);
+            }
+
+        }
+
+        return $likes;
     }
 
 
